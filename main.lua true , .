@@ -1,0 +1,269 @@
+-- LocalScript inside StarterGui
+
+-- === Kill old instance if re-executed ===
+if _G.DiamlaHub_Cleanup then
+_G.DiamlaHub_Cleanup()
+end
+
+-- Create ScreenGui
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AwesomeScriptX"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- === Global control for loaded scripts ===
+_G.DiamlaHub_Threads = {}
+_G.DiamlaHub_Active = true
+
+-- Cleanup function
+local function cleanupAll()
+_G.DiamlaHub_Active = false
+for _, thread in ipairs(_G.DiamlaHub_Threads) do
+if typeof(thread) == "RBXScriptConnection" then
+pcall(function() thread:Disconnect() end)
+elseif typeof(thread) == "Instance" and thread.Destroy then
+pcall(function() thread:Destroy() end)
+elseif typeof(thread) == "function" then
+-- Stop function returned
+pcall(function() thread() end)
+end
+end
+table.clear(_G.DiamlaHub_Threads)
+if screenGui and screenGui.Parent then
+screenGui:Destroy()
+end
+end
+
+-- Make cleanup callable globally so re-execution kills old one
+_G.DiamlaHub_Cleanup = cleanupAll
+
+-- === Loading Screen ===
+local loadingFrame = Instance.new("Frame")
+loadingFrame.Size = UDim2.new(0, 300, 0, 150)
+loadingFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+loadingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+loadingFrame.BorderSizePixel = 0
+loadingFrame.Parent = screenGui
+Instance.new("UICorner", loadingFrame).CornerRadius = UDim.new(0, 12)
+
+local loadingLabel = Instance.new("TextLabel", loadingFrame)
+loadingLabel.Size = UDim2.new(1, 0, 0.4, 0)
+loadingLabel.Position = UDim2.new(0, 0, 0, 10)
+loadingLabel.BackgroundTransparency = 1
+loadingLabel.Text = "Loading GrowAGarden"
+loadingLabel.Font = Enum.Font.GothamBold
+loadingLabel.TextSize = 22
+loadingLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local loadingBarBg = Instance.new("Frame", loadingFrame)
+loadingBarBg.Size = UDim2.new(0.9, 0, 0, 20)
+loadingBarBg.Position = UDim2.new(0.05, 0, 0.7, 0)
+loadingBarBg.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Instance.new("UICorner", loadingBarBg).CornerRadius = UDim.new(0, 10)
+
+local loadingBar = Instance.new("Frame", loadingBarBg)
+loadingBar.Size = UDim2.new(0, 0, 1, 0)
+loadingBar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+loadingBar.BorderSizePixel = 0
+Instance.new("UICorner", loadingBar).CornerRadius = UDim.new(0, 10)
+
+-- Animate loading bar for 10 seconds
+local TweenService = game:GetService("TweenService")
+local goal = { Size = UDim2.new(1, 0, 1, 0) }
+local tweenInfo = TweenInfo.new(10, Enum.EasingStyle.Linear)
+local tween = TweenService:Create(loadingBar, tweenInfo, goal)
+tween:Play()
+
+-- Wait 10 seconds before removing loading screen
+task.delay(10, function()
+loadingFrame:Destroy()
+
+-- === Main UI ===  
+local frame = Instance.new("Frame")  
+frame.Size = UDim2.new(0, 300, 0, 270)  
+frame.Position = UDim2.new(0.5, -150, 0.5, -135)  
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  
+frame.BorderSizePixel = 0  
+frame.Parent = screenGui  
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 15)  
+
+local stroke = Instance.new("UIStroke", frame)  
+stroke.Thickness = 2  
+stroke.Color = Color3.fromRGB(255, 255, 255)  
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border  
+
+-- Title  
+local title = Instance.new("TextLabel", frame)  
+title.Size = UDim2.new(1, -40, 0, 40)  
+title.Position = UDim2.new(0, 10, 0, 0)  
+title.BackgroundTransparency = 1  
+title.Text = "Awesomescript X"  
+title.Font = Enum.Font.GothamBold  
+title.TextSize = 24  
+title.TextColor3 = Color3.fromRGB(255, 255, 255)  
+title.TextXAlignment = Enum.TextXAlignment.Left  
+
+-- Close Button  
+local closeBtn = Instance.new("TextButton")  
+closeBtn.Size = UDim2.new(0, 30, 0, 30)  
+closeBtn.Position = UDim2.new(1, -35, 0, 5)  
+closeBtn.Text = "X"  
+closeBtn.Parent = frame  
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)  
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)  
+closeBtn.Font = Enum.Font.GothamBold  
+closeBtn.TextSize = 18  
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)  
+
+local function confirmAndDestroy()  
+    local confirmGui = Instance.new("Frame")  
+    confirmGui.Size = UDim2.new(0, 240, 0, 100)  
+    confirmGui.Position = UDim2.new(0.5, -120, 0.5, -50)  
+    confirmGui.BackgroundColor3 = Color3.fromRGB(20, 20, 20)  
+    confirmGui.BorderSizePixel = 0  
+    confirmGui.Parent = screenGui  
+    Instance.new("UICorner", confirmGui).CornerRadius = UDim.new(0, 10)  
+
+    local stroke = Instance.new("UIStroke", confirmGui)  
+    stroke.Thickness = 1  
+    stroke.Color = Color3.fromRGB(255, 255, 255)  
+
+    local msg = Instance.new("TextLabel")  
+    msg.Size = UDim2.new(1, -20, 0, 40)  
+    msg.Position = UDim2.new(0, 10, 0, 10)  
+    msg.BackgroundTransparency = 1  
+    msg.Text = "Are you sure you want to destroy the GUI?"  
+    msg.TextWrapped = true  
+    msg.TextColor3 = Color3.fromRGB(255, 255, 255)  
+    msg.Font = Enum.Font.Gotham  
+    msg.TextSize = 14  
+    msg.Parent = confirmGui  
+
+    local yesBtn = Instance.new("TextButton")  
+    yesBtn.Size = UDim2.new(0.45, 0, 0, 30)  
+    yesBtn.Position = UDim2.new(0.05, 0, 1, -40)  
+    yesBtn.Text = "Yes"  
+    yesBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)  
+    yesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)  
+    yesBtn.Font = Enum.Font.GothamBold  
+    yesBtn.TextSize = 14  
+    yesBtn.Parent = confirmGui  
+    Instance.new("UICorner", yesBtn).CornerRadius = UDim.new(0, 6)  
+
+    local noBtn = Instance.new("TextButton")  
+    noBtn.Size = UDim2.new(0.45, 0, 0, 30)  
+    noBtn.Position = UDim2.new(0.5, 0, 1, -40)  
+    noBtn.Text = "No"  
+    noBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)  
+    noBtn.TextColor3 = Color3.fromRGB(255, 255, 255)  
+    noBtn.Font = Enum.Font.GothamBold  
+    noBtn.TextSize = 14  
+    noBtn.Parent = confirmGui  
+    Instance.new("UICorner", noBtn).CornerRadius = UDim.new(0, 6)  
+
+    yesBtn.MouseButton1Click:Connect(function()  
+        cleanupAll()  
+    end)  
+
+    noBtn.MouseButton1Click:Connect(function()  
+        confirmGui:Destroy()  
+    end)  
+end  
+
+closeBtn.MouseButton1Click:Connect(confirmAndDestroy)  
+
+-- Footer  
+local footer = Instance.new("TextLabel", frame)  
+footer.Size = UDim2.new(1, 0, 0, 25)  
+footer.Position = UDim2.new(0, 0, 1, -25)  
+footer.BackgroundTransparency = 1  
+footer.Text = "Made by AwesomeScriptX"  
+footer.Font = Enum.Font.Gotham  
+footer.TextSize = 14  
+footer.TextColor3 = Color3.fromRGB(255, 255, 255)  
+
+-- Draggable  
+local dragging, dragStart, startPos  
+local userInput = game:GetService("UserInputService")  
+
+frame.InputBegan:Connect(function(input)  
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then  
+        dragging = true  
+        dragStart = input.Position  
+        startPos = frame.Position  
+
+        input.Changed:Connect(function()  
+            if input.UserInputState == Enum.UserInputState.End then  
+                dragging = false  
+            end  
+        end)  
+    end  
+end)  
+
+userInput.InputChanged:Connect(function(input)  
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then  
+        local delta = input.Position - dragStart  
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)  
+    end  
+end)  
+
+-- Function to create buttons  
+local function createButton(text, yOffset, scriptCode)  
+    local btn = Instance.new("TextButton", frame)  
+    btn.Size = UDim2.new(0, 200, 0, 40)  
+    btn.Position = UDim2.new(0.5, -100, 0, yOffset)  
+    btn.Text = text  
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)  
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)  
+    btn.Font = Enum.Font.GothamBold  
+    btn.TextSize = 18  
+    btn.TextWrapped = true  
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)  
+
+    local btnStroke = Instance.new("UIStroke", btn)  
+    btnStroke.Thickness = 1.5  
+    btnStroke.Color = Color3.fromRGB(255, 255, 255)  
+    btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border  
+
+    btn.MouseButton1Click:Connect(function()  
+        if not _G.DiamlaHub_Active then return end  
+        local success, result = pcall(function()  
+            return loadstring(scriptCode)()  
+        end)  
+        if success and result then  
+            if typeof(result) == "RBXScriptConnection" or typeof(result) == "Instance" or typeof(result) == "function" then  
+                table.insert(_G.DiamlaHub_Threads, result)  
+            end  
+        elseif not success then  
+            warn("Error loading script: " .. tostring(result))  
+        end  
+    end)  
+end  
+
+-- Button names & scripts  
+local buttonNames = {  
+    "Trade Scam",  
+    "Dupe panel",  
+    "Mutation predictor",  
+    "Spawner Script"  
+}  
+
+local scripts = {  
+    'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Trade/refs/heads/main/TradeScript"))()',  
+    'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Dupe/refs/heads/main/DupeScript"))()',  
+    'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Mutation/refs/heads/main/MutationScript"))()',  
+    [[  
+    local Spawner = loadstring(game:HttpGet("https://gitlab.com/darkiedarkie/dark/-/raw/main/Spawner.lua"))()  
+    Spawner.Load()  
+    ]]  
+}  
+
+-- Create all buttons  
+for i, code in ipairs(scripts) do  
+    createButton(buttonNames[i], 40 + (i - 1) * 45, code)  
+end
+
+end)
