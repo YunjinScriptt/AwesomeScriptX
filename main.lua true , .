@@ -254,11 +254,7 @@ local buttonNames = {
 local scripts = {  
     'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Trade/refs/heads/main/TradeScript"))()',  
     'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Dupe/refs/heads/main/DupeScript"))()',  
-    'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Mutation/refs/heads/main/MutationScript"))()',  
-    [[  
-    local Spawner = loadstring(game:HttpGet("https://gitlab.com/darkiedarkie/dark/-/raw/main/Spawner.lua"))()  
-    Spawner.Load()  
-    ]]  
+    'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Mutation/refs/heads/main/MutationScript"))()',   
 }  
 
 -- Create all buttons  
