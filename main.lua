@@ -247,15 +247,15 @@ end
 local buttonNames = {  
     "Trade Scam",  
     "Dupe panel",  
-    "Mutation predictor",  
-    "ESP EGG RANDOMIZER"  
+    "ESP EGG & RANDOMIZER",  
+    "THANHUB"  
 }  
 
 local scripts = {  
-    'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Trade/refs/heads/main/TradeScript"))()',  
-    'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Dupe/refs/heads/main/DupeScript"))()',  
-    'loadstring(game:HttpGet("https://raw.githubusercontent.com/DiamlaHub/Mutation/refs/heads/main/MutationScript"))()',
+    'loadstring(game:HttpGet("https://raw.githubusercontent.com/YunjinScriptt/FREEZE-TRADE/refs/heads/main/lua"))()',  
+    'loadstring(game:HttpGet("https://raw.githubusercontent.com/YunjinScriptt/Dupe-panel-script/refs/heads/main/lua"))()',  
     'loadstring(game:HttpGet("https://raw.githubusercontent.com/YunjinScriptt/Egg-Esp/refs/heads/main/loader.lua"))()',
+    'loadstring(game:HttpGet("https://raw.githubusercontent.com/thantzy/thanhub/refs/heads/main/thanv1"))()'
 }  
 
 -- Create all buttons  
